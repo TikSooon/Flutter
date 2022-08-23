@@ -7,6 +7,7 @@ class ProjectModel {
   final String more_icon; //Icon? more_icon;
   final String project_link; //AssetImage? project_link;
   TextEditingController controller = TextEditingController();
+  FocusNode focusNode = FocusNode();
   List<SecondPageModel> SecondPageModelList = [];
   List<CharacterPageModel> CharacterPageModelList = [];
 

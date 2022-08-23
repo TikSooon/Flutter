@@ -49,7 +49,7 @@ class MainPage extends StatefulWidget {
   static List<List<dynamic>> NewCS = []; //new call sheet list
 
   static final GlobalKey<ScaffoldState> scaffoldKey =
-      new GlobalKey<ScaffoldState>();
+  new GlobalKey<ScaffoldState>();
 
   @override
   MainPageState createState() => MainPageState();
@@ -57,6 +57,7 @@ class MainPage extends StatefulWidget {
 
 class MainPageState extends State<MainPage> with TickerProviderStateMixin {
   List<TextEditingController> _controller1 = [];
+  TextEditingController test = TextEditingController();
   List<bool> _rename = [];
 
   //-Search Bar Visibility-
@@ -98,8 +99,8 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
     }
     timer = Timer.periodic(
         Duration(seconds: 1),
-        (Timer t) async =>
-            await PreferencesService.saveSettings(main_projects_list));
+            (Timer t) async =>
+        await PreferencesService.saveSettings(main_projects_list));
     display_list = List.from(main_projects_list);
   }
 
@@ -135,11 +136,20 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
     // final SystemUiOverlayStyle themeSet = SystemUiOverlayStyle.dark.copyWith();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
 
-    bool showFab = MediaQuery.of(context).viewInsets.bottom != 0;
+    bool showFab = MediaQuery
+        .of(context)
+        .viewInsets
+        .bottom != 0;
 
     //check screen safe area
-    final double width = MediaQuery.of(context).size.width;
-    final double height = MediaQuery.of(context).size.height;
+    final double width = MediaQuery
+        .of(context)
+        .size
+        .width;
+    final double height = MediaQuery
+        .of(context)
+        .size
+        .height;
     //final ValueNotifier<int> rec_project = ValueNotifier(0);
 
     _titleFocusNode.addListener(() {
@@ -186,318 +196,324 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                           return Expanded(
                             child: display_list.length == 0
                                 ? Center(
-                                    child: Text(
-                                    "No results found",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ))
+                                child: Text(
+                                  "No results found",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ))
                                 : Theme(
-                                    data: ThemeData(
-                                        canvasColor: Colors.transparent),
-                                    child: ReorderableListView.builder(
-                                        onReorder: (oldIndex, newIndex) {
-                                          setState(() {
-                                            if (newIndex > oldIndex) newIndex--;
-                                            final item =
-                                                display_list.removeAt(oldIndex);
-                                            display_list.insert(newIndex, item);
-                                            final itemx = main_projects_list
-                                                .removeAt(oldIndex);
-                                            main_projects_list.insert(
-                                                newIndex, itemx);
-                                          });
-                                        },
-                                        shrinkWrap: true,
-                                        itemCount: display_list.length,
-                                        itemBuilder: (context, index) {
-                                          if (display_list[index]
-                                              .controller
-                                              .text
-                                              .isEmpty) {
-                                            display_list[index]
-                                                    .controller
-                                                    .text =
-                                                display_list[index]
-                                                    .project_title;
-                                          }
-                                          return Dismissible(
-                                            onDismissed: (direction) {
-                                              setState(() {
-                                                display_list.removeAt(index);
-                                                main_projects_list
-                                                    .removeAt(index);
-                                              });
+                              data: ThemeData(
+                                  canvasColor: Colors.transparent),
+                              child: ReorderableListView.builder(
+                                  onReorder: (oldIndex, newIndex) {
+                                    setState(() {
+                                      if (newIndex > oldIndex) newIndex--;
+                                      final item =
+                                      display_list.removeAt(oldIndex);
+                                      display_list.insert(newIndex, item);
+                                      final itemx = main_projects_list
+                                          .removeAt(oldIndex);
+                                      main_projects_list.insert(
+                                          newIndex, itemx);
+                                    });
+                                  },
+                                  shrinkWrap: true,
+                                  itemCount: display_list.length,
+                                  itemBuilder: (context, index) {
+                                    if (display_list[index]
+                                        .controller
+                                        .text
+                                        .isEmpty) {
+                                      display_list[index]
+                                          .controller
+                                          .text =
+                                          display_list[index]
+                                              .project_title;
+                                    }
+                                    return Dismissible(
+                                      onDismissed: (direction) {
+                                        setState(() {
+                                          display_list.removeAt(index);
+                                          main_projects_list
+                                              .removeAt(index);
+                                        });
+                                      },
+                                      direction:
+                                      DismissDirection.endToStart,
+                                      background: Container(
+                                        color: Colors.red,
+                                        alignment: Alignment.centerRight,
+                                        padding:
+                                        EdgeInsets.only(right: 25),
+                                        child: ImageIcon(
+                                          AssetImage(
+                                              'assets/icons/Bin_White.png'),
+                                          size: 30,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      key: ValueKey(display_list[index]),
+                                      child: Column(
+                                        children: <Widget>[
+                                          ListTile(
+                                            key: ValueKey(
+                                                display_list[index]),
+                                            // key for the ReorderableListView
+                                            onTap: () {
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          SecondRoute(
+                                                              index,
+                                                              main_projects_list)));
                                             },
-                                            direction:
-                                                DismissDirection.endToStart,
-                                            background: Container(
-                                              color: Colors.red,
-                                              alignment: Alignment.centerRight,
-                                              padding:
-                                                  EdgeInsets.only(right: 25),
-                                              child: ImageIcon(
-                                                AssetImage(
-                                                    'assets/icons/Bin_White.png'),
-                                                size: 30,
-                                                color: Colors.white,
+                                            contentPadding:
+                                            EdgeInsets.all(8.0),
+
+                                            // title: (main_projects_list[index].controller.text.isNotEmpty)?
+                                            //   Text(main_projects_list[index].controller.text,
+                                            //     style: TextStyle(
+                                            //         color: Colors.white,
+                                            //         fontSize: 20,
+                                            //         fontWeight: FontWeight
+                                            //             .bold)):
+                                            //   Text('Project ${index + 1}',
+                                            //     style: TextStyle(
+                                            //         color: Colors.white,
+                                            //         fontSize: 20,
+                                            //         fontWeight: FontWeight
+                                            //             .bold),)
+                                            // ,
+                                            title: TextField(
+                                              controller:
+                                              display_list[index]
+                                                  .controller,
+                                              onChanged: (text) {
+                                                setState(() {
+                                                  main_projects_list[index]
+                                                      .project_title = text;
+                                                  display_list[index]
+                                                      .project_title = text;
+                                                });
+                                              },
+                                              focusNode: display_list[index].focusNode,
+                                              autofocus: false,
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight
+                                                      .bold),
+                                              decoration: InputDecoration(
+                                                hintText: display_list[index]
+                                                    .project_title,
+                                                hintStyle: TextStyle(
+                                                    color: Colors.white),
+                                                border: InputBorder.none,
                                               ),
                                             ),
-                                            key: ValueKey(display_list[index]),
-                                            child: Column(
+                                            subtitle: Text(
+                                              display_list[index].date,
+                                              style: TextStyle(
+                                                  color: Colors.grey),
+                                            ),
+                                            trailing: Wrap(
+                                              spacing: 12,
+                                              // space between two icons
                                               children: <Widget>[
-                                                ListTile(
-                                                  key: ValueKey(
-                                                      display_list[index]),
-                                                  // key for the ReorderableListView
-                                                  onTap: () {
-                                                    Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                SecondRoute(
-                                                                    index,
-                                                                    main_projects_list)));
-                                                  },
-                                                  contentPadding:
-                                                      EdgeInsets.all(8.0),
+                                                IconButton(
+                                                  onPressed: () {
+                                                    //more menu bottom sheet
+                                                    showModalBottomSheet<
+                                                        dynamic>(
+                                                      isScrollControlled:
+                                                      true,
+                                                      backgroundColor:
+                                                      Color(
+                                                          0xff303030),
+                                                      context: context,
+                                                      builder: (context) {
+                                                        return Column(
+                                                          mainAxisSize:
+                                                          MainAxisSize
+                                                              .min,
+                                                          children: [
+                                                            //Divider
+                                                            Divider(
+                                                              height: 30,
+                                                              thickness:
+                                                              1,
+                                                              indent:
+                                                              width,
+                                                              endIndent:
+                                                              width,
+                                                              color: Color(
+                                                                  0xff656565),
+                                                            ),
 
-                                                  // title: (main_projects_list[index].controller.text.isNotEmpty)?
-                                                  //   Text(main_projects_list[index].controller.text,
-                                                  //     style: TextStyle(
-                                                  //         color: Colors.white,
-                                                  //         fontSize: 20,
-                                                  //         fontWeight: FontWeight
-                                                  //             .bold)):
-                                                  //   Text('Project ${index + 1}',
-                                                  //     style: TextStyle(
-                                                  //         color: Colors.white,
-                                                  //         fontSize: 20,
-                                                  //         fontWeight: FontWeight
-                                                  //             .bold),)
-                                                  // ,
-                                                  title: TextField(
-                                                    controller:
-                                                        display_list[index]
-                                                            .controller,
-                                                    onChanged: (text) {
-                                                    setState(() {
-                                                      main_projects_list[index]
-                                                          .project_title = text;
-                                                      display_list[index]
-                                                          .project_title = text;
-                                                    });
-                                                  },
-                                                    autofocus: false,
-                                                    style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 20,
-                                                        fontWeight: FontWeight
-                                                            .bold),
-                                                    decoration: InputDecoration(
-                                                      hintText: display_list[index]
-                                                          .project_title,
-                                                      hintStyle: TextStyle(
-                                                          color: Colors.white),
-                                                      border: InputBorder.none,
-                                                    ),
-                                                  ),
-                                                  subtitle: Text(
-                                                    display_list[index].date,
-                                                    style: TextStyle(
-                                                        color: Colors.grey),
-                                                  ),
-                                                  trailing: Wrap(
-                                                    spacing: 12,
-                                                    // space between two icons
-                                                    children: <Widget>[
-                                                      IconButton(
-                                                        onPressed: () {
-                                                          //more menu bottom sheet
-                                                          showModalBottomSheet<
-                                                              dynamic>(
-                                                            isScrollControlled:
-                                                                true,
-                                                            backgroundColor:
-                                                                Color(
-                                                                    0xff303030),
-                                                            context: context,
-                                                            builder: (context) {
-                                                              return Column(
-                                                                mainAxisSize:
-                                                                    MainAxisSize
-                                                                        .min,
+                                                            //show project name
+                                                            Container(
+                                                              padding: EdgeInsets
+                                                                  .only(
+                                                                  left:
+                                                                  30,
+                                                                  right:
+                                                                  40,
+                                                                  top: 10,
+                                                                  bottom:
+                                                                  10),
+                                                              child: Row(
+                                                                mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .start,
+                                                                crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .center,
                                                                 children: [
-                                                                  //Divider
-                                                                  Divider(
-                                                                    height: 30,
-                                                                    thickness:
-                                                                        1,
-                                                                    indent:
-                                                                        width,
-                                                                    endIndent:
-                                                                        width,
-                                                                    color: Color(
-                                                                        0xff656565),
+                                                                  //Icon decoration
+                                                                  ImageIcon(
+                                                                    AssetImage(
+                                                                        'assets/icons/pink.png'),
+                                                                    size:
+                                                                    35,
+                                                                    color:
+                                                                    Colors
+                                                                        .white,
                                                                   ),
 
-                                                                  //show project name
-                                                                  Container(
-                                                                    padding: EdgeInsets.only(
-                                                                        left:
-                                                                            30,
-                                                                        right:
-                                                                            40,
-                                                                        top: 10,
-                                                                        bottom:
-                                                                            10),
-                                                                    child: Row(
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .start,
-                                                                      crossAxisAlignment:
-                                                                          CrossAxisAlignment
-                                                                              .center,
-                                                                      children: [
-                                                                        //Icon decoration
-                                                                        ImageIcon(
-                                                                          AssetImage(
-                                                                              'assets/icons/pink.png'),
-                                                                          size:
-                                                                              35,
-                                                                          color:
-                                                                              Colors.white,
-                                                                        ),
-
-                                                                        //Project Name
-                                                                        Padding(
-                                                                          padding:
-                                                                              EdgeInsets.only(left: 16),
-                                                                          child:
-                                                                              Text(
-                                                                            display_list[index].project_title,
-                                                                            style: TextStyle(
-                                                                                fontFamily: 'Graphik',
-                                                                                fontSize: 17.5,
-                                                                                fontWeight: FontWeight.w900,
-                                                                                color: Color(0xffffffff)),
-                                                                          ),
-                                                                        ),
-                                                                      ],
+                                                                  //Project Name
+                                                                  Padding(
+                                                                    padding:
+                                                                    EdgeInsets
+                                                                        .only(
+                                                                        left: 16),
+                                                                    child:
+                                                                    Text(
+                                                                      display_list[index]
+                                                                          .project_title,
+                                                                      style: TextStyle(
+                                                                          fontFamily: 'Graphik',
+                                                                          fontSize: 17.5,
+                                                                          fontWeight: FontWeight
+                                                                              .w900,
+                                                                          color: Color(
+                                                                              0xffffffff)),
                                                                     ),
                                                                   ),
-
-                                                                  //Divider
-                                                                  Divider(
-                                                                    height: 30,
-                                                                    thickness:
-                                                                        2,
-                                                                    indent: 10,
-                                                                    endIndent:
-                                                                        10,
-                                                                    color: Color(
-                                                                        0xff656565),
-                                                                  ),
-
-                                                                  //items
-                                                                  _createMoreMenuItem(
-                                                                      icon: Icons
-                                                                          .ios_share,
-                                                                      text:
-                                                                          'Share',
-                                                                      onTap:
-                                                                          () {
-                                                                        //share
-                                                                        Navigator.pop(
-                                                                            context);
-                                                                      }),
-
-                                                                  //rename
-                                                                  _createMoreMenuItem(
-                                                                      icon: Icons
-                                                                          .edit,
-                                                                      text:
-                                                                          'Rename',
-                                                                      onTap:
-                                                                          () {
-
-                                                                        _rename[index] =
-                                                                            true;
-
-                                                                        //rename
-                                                                        Navigator.pop(
-                                                                            context);
-                                                                        setState(() {
-                                                                        });
-
-                                                                        // WidgetsBinding.instance.addPostFrameCallback((_) {
-                                                                        //   FocusScope.of(context)
-                                                                        //       .requestFocus(display_list[index]._titleFocusNode);
-                                                                        // });
-                                                                      }),
-
-                                                                  //Delete, remove from project list and add into trash list
-                                                                  _createMoreMenuItem(
-                                                                      icon: Icons
-                                                                          .delete,
-                                                                      text:
-                                                                          'Delete',
-                                                                      onTap:
-                                                                          () {
-                                                                        MainPage
-                                                                            .trashList
-                                                                            .add(MainPage.projectList[index]);
-                                                                        MainPage
-                                                                            .projectList
-                                                                            .removeAt(index);
-                                                                        display_list
-                                                                            .removeAt(index);
-                                                                        Navigator.pop(
-                                                                            context);
-                                                                        setState(
-                                                                            () {
-                                                                          main_projects_list
-                                                                              .removeAt(index);
-                                                                        });
-                                                                      }),
-
-                                                                  //gap
-                                                                  SizedBox(
-                                                                      height:
-                                                                          20),
                                                                 ],
-                                                              );
-                                                            },
-                                                          );
-                                                        },
-                                                        icon: Icon(
-                                                          Icons
-                                                              .more_horiz_sharp,
-                                                          size: 26,
-                                                          color: Colors.white,
-                                                        ),
-                                                      ),
-                                                    ],
+                                                              ),
+                                                            ),
+
+                                                            //Divider
+                                                            Divider(
+                                                              height: 30,
+                                                              thickness:
+                                                              2,
+                                                              indent: 10,
+                                                              endIndent:
+                                                              10,
+                                                              color: Color(
+                                                                  0xff656565),
+                                                            ),
+
+                                                            //items
+                                                            _createMoreMenuItem(
+                                                                icon: Icons
+                                                                    .ios_share,
+                                                                text:
+                                                                'Share',
+                                                                onTap:
+                                                                    () {
+                                                                  //share
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                  print("Shared");
+                                                                }),
+
+                                                            //rename
+                                                            _createMoreMenuItem(
+                                                                icon: Icons
+                                                                    .edit,
+                                                                text:
+                                                                'Rename',
+                                                                onTap:
+                                                                    () {
+
+                                                                  _rename.add(true);
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                  display_list[index].focusNode.requestFocus();
+
+                                                                }),
+
+                                                            //Delete, remove from project list and add into trash list
+                                                            _createMoreMenuItem(
+                                                                icon: Icons
+                                                                    .delete,
+                                                                text:
+                                                                'Delete',
+                                                                onTap:
+                                                                    () {
+                                                                  MainPage
+                                                                      .trashList
+                                                                      .add(
+                                                                      MainPage
+                                                                          .projectList[index]);
+                                                                  MainPage
+                                                                      .projectList
+                                                                      .removeAt(
+                                                                      index);
+                                                                  display_list
+                                                                      .removeAt(
+                                                                      index);
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                  setState(
+                                                                          () {
+                                                                        main_projects_list
+                                                                            .removeAt(
+                                                                            index);
+                                                                      });
+                                                                }),
+
+                                                            //gap
+                                                            SizedBox(
+                                                                height:
+                                                                20),
+                                                          ],
+                                                        );
+                                                      },
+                                                    );
+                                                  },
+                                                  icon: Icon(
+                                                    Icons
+                                                        .more_horiz_sharp,
+                                                    size: 26,
+                                                    color: Colors.white,
                                                   ),
-                                                  leading: Image(
-                                                    image: AssetImage(
-                                                        'assets/icons/Sheet_Grey.png'),
-                                                    color: Colors.grey,
-                                                  ),
-                                                ),
-                                                Divider(
-                                                  color: Color(0xff656565),
-                                                  thickness: 1.5,
-                                                  indent: 15,
-                                                  endIndent: 15,
                                                 ),
                                               ],
                                             ),
-                                          );
-                                        }),
-                                  ),
+                                            leading: Image(
+                                              image: AssetImage(
+                                                  'assets/icons/Sheet_Grey.png'),
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          Divider(
+                                            color: Color(0xff656565),
+                                            thickness: 1.5,
+                                            indent: 15,
+                                            endIndent: 15,
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }),
+                            ),
                           );
                         },
                       ),
@@ -561,13 +577,13 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                             cursorColor: Colors.grey[300],
                             textAlignVertical: TextAlignVertical.center,
                             style:
-                                TextStyle(fontSize: 16, color: Colors.white70),
+                            TextStyle(fontSize: 16, color: Colors.white70),
                             onChanged: (newSearch) {
                               _search = newSearch;
                               display_list = main_projects_list
                                   .where((main_projects_list) =>
-                                      main_projects_list.project_title
-                                          .contains(_search))
+                                  main_projects_list.project_title
+                                      .contains(_search))
                                   .toList();
                             },
                             decoration: InputDecoration(
@@ -584,12 +600,12 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(100),
                                 borderSide:
-                                    new BorderSide(color: Colors.transparent),
+                                new BorderSide(color: Colors.transparent),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(100),
                                 borderSide:
-                                    new BorderSide(color: Colors.transparent),
+                                new BorderSide(color: Colors.transparent),
                               ),
                             ),
                           ),
@@ -604,16 +620,16 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                             visible: _isInvisibleTriggerActive,
                             child: Container(
                                 color:
-                                    Color(0x77000000) //semi-Transparent black
-                                //color: Color(0x00000000),
-                                ),
+                                Color(0x77000000) //semi-Transparent black
+                              //color: Color(0x00000000),
+                            ),
                           ),
                           onTap: () {
                             setState(() {
                               _isMenuActive = !_isMenuActive;
                               _isSearchBarActive = !_isSearchBarActive;
                               _isInvisibleTriggerActive =
-                                  !_isInvisibleTriggerActive;
+                              !_isInvisibleTriggerActive;
                               _controller.reverse();
                             });
                           },
@@ -638,7 +654,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                 createNewProject();
                 switch (MainPage.menuName) {
                   case "Beat Sheet":
-                    //Navigator.of(context).push(toBS_main(MainPage.projectPos)).then((value) => setState(() {}));
+                  //Navigator.of(context).push(toBS_main(MainPage.projectPos)).then((value) => setState(() {}));
                     break;
                   case "Shot List":
                     break;
@@ -709,20 +725,32 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
       main_projects_list = List.from(display_list);
       List<int> x = [];
       for (int i = 0; i < main_projects_list.length; i++) {
-        x.add(int.parse(main_projects_list[i]
+        String num = main_projects_list[i]
             .controller
             .text
-            .replaceAll(RegExp(r'[^0-9,.]+'), '')));
+            .replaceAll(RegExp(r'[^0-9,.]+'), '');
+        if (num != "") {
+          x.add(int.parse(num));
+        }
       }
-      print(x);
       main_projects_list.add(ProjectModel(
-          "Project ${x.isEmpty ? main_projects_list.length + 1 : x.reduce((value, element) => value > element ? value : element) + 1}",
+          "Project ${x.isEmpty ? main_projects_list.length + 1 : x.reduce((
+              value, element) => value > element ? value : element) + 1}",
           "8 AUG 2021",
           "icons.more",
           "('assets/Grey_docs2.jpeg')"));
     });
     display_list = List.from(main_projects_list);
   }
+
+  // void rename(String index) {
+  //   for (int i = 0; i < main_projects_list.length; i++){
+  //     if (i == index){
+  //       TextField.focusNode.requestFocus();
+  //       break;
+  //     }
+  //   }
+  // }
 
 /*
   Future<void> Export() async{
@@ -738,15 +766,13 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
 }
 
-void rename() {
 
-}
 
 //remove scroll glow effect
 class MyBehavior extends ScrollBehavior {
   @override
-  Widget buildViewportChrome(
-      BuildContext context, Widget child, AxisDirection axisDirection) {
+  Widget buildViewportChrome(BuildContext context, Widget child,
+      AxisDirection axisDirection) {
     return child;
   }
 }
