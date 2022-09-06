@@ -12,6 +12,7 @@ import 'Trash.dart';
 //Route to Homepage
 Route toMain() {
   return PageRouteBuilder(
+
       pageBuilder: (context, animation, secondaryAnimation) => MainPage(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         var begin = Offset(0, -1);

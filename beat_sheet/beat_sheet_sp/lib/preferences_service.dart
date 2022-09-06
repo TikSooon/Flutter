@@ -11,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class PreferencesService {
   static late SharedPreferences preferences;
   static late List<List<SecondPageModel>> moreproject = [];
-  //static late List<List<CharacterPageModel>> charaterproject = [];
+  static late List<List<CharacterPageModel>> characterproject = [];
 
   static Future init() async =>
       preferences = await SharedPreferences.getInstance();
@@ -19,10 +19,11 @@ class PreferencesService {
   static Future saveSettings(List<ProjectModel> projects) async {
     for (int i = 0; i < projects.length; i++) {
       moreproject.add(projects[i].SecondPageModelList);
-      //charaterproject.add(projects[i].CharacterPageModelList);
+      characterproject.add(projects[i].CharacterPageModelList);
     }
+    await saveCharacterSetting(characterproject);
     await saveMoreSetting(moreproject);
-    //await saveCharacterSetting(charaterproject);
+
     return await preferences.setString('user', jsonEncode(projects));
   }
 
@@ -38,7 +39,7 @@ class PreferencesService {
 
     for (int i = 0; i < MainPageState.main_projects_list.length; i++) {
       getMoreProject(i);
-      //getCharacterProject(i);
+      getCharacterProject(i);
     }
   }
 
@@ -58,11 +59,9 @@ class PreferencesService {
     for(int i=0; i< MainPageState.main_projects_list[index].SecondPageModelList.length; i++){
       MainPageState.main_projects_list[index].SecondPageModelList[i].beats.text =  MainPageState.main_projects_list[index].SecondPageModelList[i].x!;
       MainPageState.main_projects_list[index].SecondPageModelList[i].body.text =  MainPageState.main_projects_list[index].SecondPageModelList[i].y!;
-      MainPageState.main_projects_list[index].SecondPageModelList[i].isExpanded = MainPageState.main_projects_list[index].SecondPageModelList[i].isExpanded;
     }
   }
 
-  /*
   static Future saveCharacterSetting(List<List<CharacterPageModel>> projects) async {
     return await preferences.setString('characters', jsonEncode(projects));
   }
@@ -79,11 +78,7 @@ class PreferencesService {
     for(int i=0; i< MainPageState.main_projects_list[index].CharacterPageModelList.length; i++){
       MainPageState.main_projects_list[index].CharacterPageModelList[i].name.text =  MainPageState.main_projects_list[index].CharacterPageModelList[i].x!;
       MainPageState.main_projects_list[index].CharacterPageModelList[i].descriptions.text =  MainPageState.main_projects_list[index].CharacterPageModelList[i].y!;
-      MainPageState.main_projects_list[index].CharacterPageModelList[i].isExpanded = MainPageState.main_projects_list[index].CharacterPageModelList[i].isExpanded;
     }
   }
-
-
-   */
 }
 

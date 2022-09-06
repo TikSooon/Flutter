@@ -71,6 +71,7 @@ class _SecondRouteState extends State<SecondRoute> {
             child: Column(
               children: <Widget>[
                 Container(
+                  padding: EdgeInsets.symmetric(horizontal: 30.0),
                   alignment: Alignment.topCenter,
                   constraints: BoxConstraints.expand(height: 50),
                   child: TabBar(

@@ -1,4 +1,8 @@
 //flutter
+import 'dart:async';
+
+import 'package:beat_sheet/MainPage.dart';
+import 'package:beat_sheet/Trash.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:beat_sheet/Routes.dart';
@@ -22,10 +26,7 @@ class _sideMenuState extends State<sideMenu> {
   @override
   void initState() {
     super.initState();
-
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   @override
@@ -36,7 +37,6 @@ class _sideMenuState extends State<sideMenu> {
         canvasColor: Color(0xff191919),
       ),
       child: Drawer(
-
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
@@ -59,13 +59,13 @@ class _sideMenuState extends State<sideMenu> {
                   ),
                 ),
                 child: Stack(
+                  alignment: Alignment.centerLeft,
                   children: [
                     //Logo Name
                     Positioned(
-                      top: 0,
-                      left: 5,
+                      left: 10,
                       child: Text('Setting',
-                        style: TextStyle(fontFamily: "Calibri", fontWeight: FontWeight.w500, fontSize: 42, color: Color(
+                        style: TextStyle(fontFamily: "Calibri", fontWeight: FontWeight.w500, fontSize: 25, color: Color(
                             0xffc96d6d)),
                       ),
                     ),
@@ -76,13 +76,11 @@ class _sideMenuState extends State<sideMenu> {
             
             //Items & Divider
             _DrawerDivider(),
-            SizedBox(height: 5),
+            SizedBox(height: 10),
             _createDrawerTapItem(icon: CupertinoIcons.trash_fill, text: 'Recently Deleted', onTap: () {
               Navigator.pop(context);
-              Navigator.of(context).push(toTrashPage());
+              Navigator.push(context, toTrashPage());
             }),
-
-
           ],
         ),
       ),
@@ -92,7 +90,7 @@ class _sideMenuState extends State<sideMenu> {
   //Drawer divider
   Widget _DrawerDivider() {
     return Divider(
-      height: 20,
+      height: 0,
       thickness: 2,
       indent: 0,
       endIndent: 0,
@@ -144,6 +142,5 @@ class _sideMenuState extends State<sideMenu> {
       ),
     );
   }
-
 }
 

@@ -1,3 +1,4 @@
+import 'package:beat_sheet/Routes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
@@ -5,13 +6,17 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/animation.dart';
 
+import 'Classes/project_model.dart';
 import 'MainPage.dart';
 //One Shot
 
 //Home Page
 class TrashPage extends StatefulWidget {
   const TrashPage({Key? key});
+
   static ValueNotifier<int> rec_project = ValueNotifier(0);
+  static List<ProjectModel> recList = [];
+
   @override
   _TrashPageState createState() => _TrashPageState();
 }
@@ -27,13 +32,12 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
     'Shot List',
     'Concept Board'
   ];
-//static ValueNotifier<int> rec_project = ValueNotifier(0);
+
   //bool
   bool _isCheckBoxActive = false;
   bool _isEditActive = false;
   bool _isSelectAll = false;
-  bool _a = true;
-  bool _b = true;
+  bool _option = false;
 
   //declaration for Animation of dropdown template menu
   late final AnimationController _controller;
@@ -52,7 +56,7 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-
+    TrashPage.recList.clear();
     setState(() {});
   }
 
@@ -60,7 +64,6 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
   @override
   void dispose() {
     _controller.dispose();
-
     super.dispose();
   }
 
@@ -78,7 +81,6 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
     //check screen safe area
     final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
-    //final ValueNotifier<int> rec_project = ValueNotifier(0);
 
     return new AnnotatedRegion(
       value: themeSet,
@@ -90,7 +92,7 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
           },
           //Page Layout
           child: Scaffold(
-            backgroundColor: Colors.black,
+            backgroundColor: Color(0xff1E1E1E),
 
             //body layout
             body: Container(
@@ -104,7 +106,7 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
                   AppBar(
                     //backgroundColor: Colors.transparent,
                     elevation: 0,
-                    backgroundColor: Colors.black,
+                    backgroundColor: Color(0xff1E1E1E),
                     toolbarHeight: 60,
                     centerTitle: false,
                     //-Left icon - Back Button-
@@ -119,8 +121,8 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
                           ),
                           onPressed: () {
                             //reset();
-                            clearTempItems();
-                            Navigator.pop(context);
+                            Navigator.pop(context, TrashPage.recList);
+                            Navigator.push(context, toMain());
                           },
                         );
                       },
@@ -147,7 +149,7 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
                     child: TextField(
                       cursorColor: Colors.grey[300],
                       textAlignVertical: TextAlignVertical.center,
-                      style: TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16, color: Colors.white),
                       decoration: InputDecoration(
                         contentPadding: EdgeInsets.all(12),
                         filled: true,
@@ -199,32 +201,30 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
                               top: 15, bottom: 12.5, right: 0, left: 125),
                           child: GestureDetector(
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 0),
                               child: Align(
-                                alignment: Alignment.center,
+                                alignment: Alignment.centerRight,
                                 child: ElevatedButton(
                                   style: ButtonStyle(
                                     backgroundColor: MaterialStateProperty.all(
-                                        Colors.transparent),
+                                        Color(0xff1E1E1E)),
                                   ),
                                   onPressed: () {
-                                    setState(() {
-                                      _isSelectAll = true;
-                                      _isCheckBoxActive = !_isCheckBoxActive;
-                                      _a = !_a;
-                                      _b = !_b;
-                                      if (_isCheckBoxActive == false) {
-                                        for (var i = 0;
+                                    if (!_isCheckBoxActive) {
+                                      setState(() {
+                                        _isCheckBoxActive = !_isCheckBoxActive;
+                                      });
+                                    } else {
+                                      setState(() {
+                                        for (int i = 0;
                                             i < MainPage.trashList.length;
                                             i++) {
-                                          MainPage.trashList[i][0].isSelected =
+                                          MainPage.trashList[i].isSelected =
                                               true;
                                         }
-                                        _isEditActive = false;
-                                      } else {
-                                        _isEditActive = true;
-                                      }
-                                    });
+                                      });
+                                    }
+                                    _option = true;
+                                    _isEditActive = true;
                                   },
                                   child: Text(
                                     _isCheckBoxActive == true
@@ -240,24 +240,6 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
                                 ),
                               ),
                             ),
-                            /*onTap: () {
-                              setState(() {
-                                _isSelectAll = false;
-                                _isCheckBoxActive = !_isCheckBoxActive;
-                                _a = !_a;
-                                _b = !_b;
-                                if (_isCheckBoxActive == false) {
-                                  for (var i = 0;
-                                      i < MainPage.trashList.length;
-                                      i++) {
-                                    MainPage.trashList[i][0].isSelected = false;
-                                  }
-                                  _isEditActive = false;
-                                } else {
-                                  _isEditActive = true;
-                                }
-                              });
-                            },*/
                           ),
                         ),
                       ],
@@ -297,8 +279,7 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
                                     child: Padding(
                                       padding: EdgeInsets.only(right: 10),
                                       child: Icon(
-                                        MainPage.trashList[index][0]
-                                                    .isSelected ==
+                                        MainPage.trashList[index].isSelected ==
                                                 true
                                             ? Icons.check_circle
                                             : Icons
@@ -329,12 +310,12 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
                                           children: [
                                             Padding(
                                               padding:
-                                                  EdgeInsets.only(left: 16),
+                                                  EdgeInsets.only(left: 13),
                                               child: Text(
-                                                "${MainPage.trashList[index][0].projectName}",
+                                                "${MainPage.trashList[index].project_title}",
                                                 style: TextStyle(
                                                     fontFamily: 'CenturyGothic',
-                                                    fontSize: 16,
+                                                    fontSize: 15,
                                                     fontWeight: FontWeight.w400,
                                                     color: Color(0xffffffff)),
                                               ),
@@ -349,10 +330,10 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
                                           children: [
                                             Padding(
                                               padding: EdgeInsets.only(
-                                                left: 16,
+                                                left: 13,
                                               ),
                                               child: Text(
-                                                "${MainPage.trashList[index][0].projectCreatedDate}",
+                                                "${MainPage.trashList[index].date}",
                                                 style: TextStyle(
                                                     fontFamily: 'CenturyGothic',
                                                     fontSize: 14,
@@ -367,133 +348,121 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
                                   ),
 
                                   //more menu
-                                  Padding(
-                                    padding: EdgeInsets.only(
-                                        top: 0,
-                                        bottom: 0,
-                                        right: 10,
-                                        left: 120),
-                                    child: Visibility(
-                                      visible: _b,
-                                      child: IconButton(
-                                        icon: Icon(Icons.more_horiz_sharp,
-                                            size: 30,
-                                            color: Color.fromARGB(
-                                                255, 255, 154, 138)),
-                                        onPressed: () {
-                                          showModalBottomSheet(
-                                            backgroundColor: Color(0xff303030),
-                                            context: context,
-                                            builder: (context) {
-                                              return Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  //Divider
-                                                  Divider(
-                                                    height: 30,
-                                                    thickness: 2,
-                                                    indent: width / 2 - 15,
-                                                    endIndent: width / 2 - 15,
-                                                    color: Color(0xff656565),
-                                                  ),
+                                  Visibility(
+                                    visible: _option,
+                                    child: IconButton(
+                                      icon: Icon(Icons.more_horiz_sharp,
+                                          size: 30,
+                                          color: Color.fromARGB(
+                                              255, 255, 154, 138)),
+                                      onPressed: () {
+                                        showModalBottomSheet(
+                                          backgroundColor: Color(0xff303030),
+                                          context: context,
+                                          builder: (context) {
+                                            return Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                //Divider
+                                                Divider(
+                                                  height: 30,
+                                                  thickness: 2,
+                                                  indent: width / 2 - 15,
+                                                  endIndent: width / 2 - 15,
+                                                  color: Color(0xff656565),
+                                                ),
 
-                                                  //show project name
-                                                  Container(
-                                                    padding: EdgeInsets.only(
-                                                        left: 30,
-                                                        right: 40,
-                                                        top: 10,
-                                                        bottom: 10),
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .start,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        //Icon decoration
-                                                        ImageIcon(
-                                                          AssetImage(
-                                                              'assets/icons/pink.png'),
-                                                          size: 35,
-                                                          color:
-                                                              Color(0xff999999),
+                                                //show project name
+                                                Container(
+                                                  padding: EdgeInsets.only(
+                                                      left: 30,
+                                                      right: 40,
+                                                      top: 10,
+                                                      bottom: 10),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.start,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      //Icon decoration
+                                                      ImageIcon(
+                                                        AssetImage(
+                                                            'assets/icons/pink.png'),
+                                                        size: 35,
+                                                        color:
+                                                            Color(0xff999999),
+                                                      ),
+                                                      //Project Name
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                left: 16),
+                                                        child: Text(
+                                                          "${MainPage.trashList[index].project_title}",
+                                                          style: TextStyle(
+                                                              fontFamily:
+                                                                  'CenturyGothic',
+                                                              fontSize: 20,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w900,
+                                                              color: Color(
+                                                                  0xffffffff)),
                                                         ),
-                                                        //Project Name
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsets.only(
-                                                                  left: 16),
-                                                          child: Text(
-                                                            "${MainPage.trashList[index][0].projectName}",
-                                                            style: TextStyle(
-                                                                fontFamily:
-                                                                    'CenturyGothic',
-                                                                fontSize: 20,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w900,
-                                                                color: Color(
-                                                                    0xffffffff)),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
+                                                      ),
+                                                    ],
                                                   ),
+                                                ),
 
-                                                  //Divider
-                                                  Divider(
-                                                    height: 30,
-                                                    thickness: 2,
-                                                    indent: 30,
-                                                    endIndent: 30,
-                                                    color: Color(0xff656565),
-                                                  ),
+                                                //Divider
+                                                Divider(
+                                                  height: 30,
+                                                  thickness: 2,
+                                                  indent: 30,
+                                                  endIndent: 30,
+                                                  color: Color(0xff656565),
+                                                ),
 
-                                                  //items
-                                                  //Recover
-                                                  _createMoreMenuItem(
-                                                      icon: Icons
-                                                          .arrow_circle_up_rounded,
-                                                      text: 'Recover',
-                                                      onTap: () {
-                                                        setState(() {
-                                                          MainPage.projectList
-                                                              .add(MainPage
-                                                                      .trashList[
-                                                                  index]);
-                                                          TrashPage.rec_project
-                                                              .value += 1;
-                                                          MainPage.trashList
-                                                              .removeAt(index);
-                                                          Navigator.pop(
-                                                              context);
-                                                        });
-                                                      }),
+                                                //items
+                                                //Recover
+                                                _createMoreMenuItem(
+                                                    icon: Icons
+                                                        .arrow_circle_up_rounded,
+                                                    text: 'Recover',
+                                                    onTap: () {
+                                                      setState(() {
+                                                        TrashPage.recList.add(
+                                                            MainPage.trashList[
+                                                                index]);
+                                                        TrashPage.rec_project
+                                                            .value += 1;
+                                                        MainPage.trashList
+                                                            .removeAt(index);
+                                                        Navigator.pop(context);
+                                                      });
+                                                    }),
 
-                                                  //p. delete
-                                                  _createMoreMenuItem(
-                                                      icon: Icons.delete_sharp,
-                                                      text:
-                                                          'Permanently deleted',
-                                                      onTap: () {
-                                                        setState(() {
-                                                          MainPage.trashList
-                                                              .removeAt(index);
-                                                          Navigator.pop(
-                                                              context);
-                                                        });
-                                                      }),
+                                                //p. delete
+                                                _createMoreMenuItem(
+                                                    icon: Icons.delete_sharp,
+                                                    text: 'Permanently deleted',
+                                                    onTap: () {
+                                                      setState(() {
+                                                        MainPage.trashList
+                                                            .removeAt(index);
+                                                        Navigator.pop(context);
+                                                      });
+                                                    }),
 
-                                                  //gap
-                                                  SizedBox(height: 40),
-                                                ],
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
+                                                //gap
+                                                SizedBox(height: 40),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                      },
                                     ),
                                   ),
                                 ],
@@ -503,18 +472,17 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
                               setState(() {
                                 _isCheckBoxActive = true;
                                 _isEditActive = true;
-                                _a = false;
-                                _b = false;
-                                MainPage.trashList[index][0].isSelected =
-                                    !MainPage.trashList[index][0].isSelected;
+                                _option = false;
+                                MainPage.trashList[index].isSelected =
+                                    !MainPage.trashList[index].isSelected;
                                 checkSelected();
                               });
                             },
                             onTap: () {
                               setState(() {
                                 if (_isCheckBoxActive == true) {
-                                  MainPage.trashList[index][0].isSelected =
-                                      !MainPage.trashList[index][0].isSelected;
+                                  MainPage.trashList[index].isSelected =
+                                      !MainPage.trashList[index].isSelected;
                                   checkSelected();
                                 }
                               });
@@ -532,35 +500,25 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-
-                  //bottom bar
-                  Positioned(
-                    top: 0,
-                    bottom: 0,
-                    right: 0,
-                    left: 100,
-                    child: Visibility(
-                      visible: _isEditActive,
-                      child: Container(
-                        height: 100,
-                        padding: EdgeInsets.only(left: 300),
-                        child: FloatingActionButton(
-                          backgroundColor: Color.fromARGB(255, 255, 154, 138),
-                          child: ImageIcon(
-                            AssetImage('assets/icons/Bin Grey.png'),
-                            size: 30,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              deleteSelected();
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
+              ),
+            ),
+
+            //bottom bar
+            floatingActionButton: Visibility(
+              visible: _isEditActive,
+              child: FloatingActionButton(
+                backgroundColor: Color.fromARGB(255, 255, 154, 138),
+                child: ImageIcon(
+                  AssetImage('assets/icons/Bin Grey.png'),
+                  size: 30,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  setState(() {
+                    deleteSelected();
+                  });
+                },
               ),
             ),
           ),
@@ -572,7 +530,7 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
   //check selected
   void checkSelected() {
     for (var i = 0; i < MainPage.trashList.length; i++) {
-      if (MainPage.trashList[i][0].isSelected == false) {
+      if (MainPage.trashList[i].isSelected == false) {
         _isSelectAll = false;
         break;
       } else {
@@ -584,7 +542,7 @@ class _TrashPageState extends State<TrashPage> with TickerProviderStateMixin {
   //delete selected
   void deleteSelected() {
     for (var i = 0; i < MainPage.trashList.length; i++) {
-      if (MainPage.trashList[i][0].isSelected == true) {
+      if (MainPage.trashList[i].isSelected == true) {
         MainPage.trashList.removeAt(i);
         i--;
       }

@@ -5,14 +5,15 @@ import 'package:beat_sheet/preferences_service.dart';
 import 'package:beat_sheet/Classes/project_model.dart';
 import 'package:beat_sheet/second_page.dart';
 import 'package:beat_sheet/widgets/SideMenu.dart';
+import 'package:nanoid/nanoid.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/animation.dart';
-import 'package:intl/intl.dart';
-import 'package:ios_platform_images/ios_platform_images.dart';
 
 import 'package:flutter/src/widgets/framework.dart';
 
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MainPage extends StatefulWidget {
-  const MainPage({Key? key});
+  // const MainPage({Key? key});
 
   //index of new project (widget)
   static int projectPos = 0;
@@ -39,17 +40,19 @@ class MainPage extends StatefulWidget {
   static String menuName = "Beat Sheet";
 
   //Project Lists
-  static List<List<dynamic>> projectList = [];
+  static List<dynamic> projectList = [];
+
+  // static List<List<dynamic>> projectList = main_projects_list.cast<List<dynamic>>();
 
   //trash Lists (test)
-  static List<List<dynamic>> trashList = [];
+  static List<ProjectModel> trashList = [];
   static List<ProjectModel> main_projects_list = [];
 
   //Sections
-  static List<List<dynamic>> NewCS = []; //new call sheet list
+  //static List<List<dynamic>> NewCS = []; //new call sheet list
 
-  static final GlobalKey<ScaffoldState> scaffoldKey =
-  new GlobalKey<ScaffoldState>();
+  // static final GlobalKey<ScaffoldState> scaffoldKey =
+  //     new GlobalKey<ScaffoldState>();
 
   @override
   MainPageState createState() => MainPageState();
@@ -57,7 +60,7 @@ class MainPage extends StatefulWidget {
 
 class MainPageState extends State<MainPage> with TickerProviderStateMixin {
   List<TextEditingController> _controller1 = [];
-  TextEditingController test = TextEditingController();
+
   List<bool> _rename = [];
 
   //-Search Bar Visibility-
@@ -66,14 +69,13 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
   //-Dropdown Template Menu Visibility-
   bool _isMenuActive = false;
 
-  //-Invisible Container when temlate menu is visible-
+  //-Invisible Container when template menu is visible-
   bool _isInvisibleTriggerActive = false;
   bool order = false;
 
   //search data
   late String _search = '';
   var matchingItems;
-  TextEditingController _searchproject = new TextEditingController();
 
   //Animation of dropdown template menu
   late final AnimationController _controller = AnimationController(
@@ -83,11 +85,10 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
   late Timer timer;
 
-  String _title = '';
   FocusNode _titleFocusNode = FocusNode();
   late AnimationController controller;
 
-  final listenable = ValueNotifier<int>(0);
+  // final listenable = ValueNotifier<int>(0);
 
   @override
   void initState() {
@@ -99,27 +100,31 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
     }
     timer = Timer.periodic(
         Duration(seconds: 1),
-            (Timer t) async =>
-        await PreferencesService.saveSettings(main_projects_list));
+        (Timer t) async =>
+            await PreferencesService.saveSettings(main_projects_list));
+
     display_list = List.from(main_projects_list);
   }
 
+  @override
+  void didChangeDependencies() {
+    //Refresh the list when come back
+    setState(() {
+      if (TrashPage.recList.isNotEmpty) {
+        for (int i = 0; i < TrashPage.recList.length; i++) {
+          main_projects_list.add(TrashPage.recList[i]);
+          display_list.add(TrashPage.recList[i]);
+        }
+      }
+      TrashPage.recList.clear();
+    });
+    super.didChangeDependencies();
+  }
+
+  late SlidableController slidableController;
+
   static List<ProjectModel> main_projects_list = [];
   List<ProjectModel> display_list = List.from(main_projects_list);
-
-  // function to filter list from search and lisview
-  void updateList(String value) {
-    //function to filter list here..will come back later
-
-    //Work on the search function
-    setState(() {
-      display_list = main_projects_list.where((element) {
-        return element.controller.text
-            .toLowerCase()
-            .contains(value.toLowerCase());
-      }).toList();
-    });
-  }
 
   //dispose f()
   @override
@@ -136,20 +141,11 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
     // final SystemUiOverlayStyle themeSet = SystemUiOverlayStyle.dark.copyWith();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
 
-    bool showFab = MediaQuery
-        .of(context)
-        .viewInsets
-        .bottom != 0;
+    bool showFab = MediaQuery.of(context).viewInsets.bottom != 0;
 
     //check screen safe area
-    final double width = MediaQuery
-        .of(context)
-        .size
-        .width;
-    final double height = MediaQuery
-        .of(context)
-        .size
-        .height;
+    final double width = MediaQuery.of(context).size.width;
+    final double height = MediaQuery.of(context).size.height;
     //final ValueNotifier<int> rec_project = ValueNotifier(0);
 
     _titleFocusNode.addListener(() {
@@ -169,7 +165,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
         //Page Layout
         child: Scaffold(
           primary: false,
-          key: MainPage.scaffoldKey,
+          // key: MainPage.scaffoldKey,
           backgroundColor: Color(0xff1E1E1E),
 
           //Side Menu
@@ -196,324 +192,165 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                           return Expanded(
                             child: display_list.length == 0
                                 ? Center(
-                                child: Text(
-                                  "No results found",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ))
+                                    child: Text(
+                                    "No results found",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ))
                                 : Theme(
-                              data: ThemeData(
-                                  canvasColor: Colors.transparent),
-                              child: ReorderableListView.builder(
-                                  onReorder: (oldIndex, newIndex) {
-                                    setState(() {
-                                      if (newIndex > oldIndex) newIndex--;
-                                      final item =
-                                      display_list.removeAt(oldIndex);
-                                      display_list.insert(newIndex, item);
-                                      final itemx = main_projects_list
-                                          .removeAt(oldIndex);
-                                      main_projects_list.insert(
-                                          newIndex, itemx);
-                                    });
-                                  },
-                                  shrinkWrap: true,
-                                  itemCount: display_list.length,
-                                  itemBuilder: (context, index) {
-                                    if (display_list[index]
-                                        .controller
-                                        .text
-                                        .isEmpty) {
-                                      display_list[index]
-                                          .controller
-                                          .text =
-                                          display_list[index]
-                                              .project_title;
-                                    }
-                                    return Dismissible(
-                                      onDismissed: (direction) {
-                                        setState(() {
-                                          display_list.removeAt(index);
-                                          main_projects_list
-                                              .removeAt(index);
-                                        });
-                                      },
-                                      direction:
-                                      DismissDirection.endToStart,
-                                      background: Container(
-                                        color: Colors.red,
-                                        alignment: Alignment.centerRight,
-                                        padding:
-                                        EdgeInsets.only(right: 25),
-                                        child: ImageIcon(
-                                          AssetImage(
-                                              'assets/icons/Bin_White.png'),
-                                          size: 30,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      key: ValueKey(display_list[index]),
-                                      child: Column(
-                                        children: <Widget>[
-                                          ListTile(
-                                            key: ValueKey(
-                                                display_list[index]),
-                                            // key for the ReorderableListView
-                                            onTap: () {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          SecondRoute(
-                                                              index,
-                                                              main_projects_list)));
-                                            },
-                                            contentPadding:
-                                            EdgeInsets.all(8.0),
-
-                                            // title: (main_projects_list[index].controller.text.isNotEmpty)?
-                                            //   Text(main_projects_list[index].controller.text,
-                                            //     style: TextStyle(
-                                            //         color: Colors.white,
-                                            //         fontSize: 20,
-                                            //         fontWeight: FontWeight
-                                            //             .bold)):
-                                            //   Text('Project ${index + 1}',
-                                            //     style: TextStyle(
-                                            //         color: Colors.white,
-                                            //         fontSize: 20,
-                                            //         fontWeight: FontWeight
-                                            //             .bold),)
-                                            // ,
-                                            title: TextField(
-                                              controller:
+                                    data: ThemeData(
+                                        canvasColor: Colors.transparent),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                      child: ReorderableListView.builder(
+                                          onReorder: (oldIndex, newIndex) {
+                                            setState(() {
+                                              if (newIndex > oldIndex)
+                                                newIndex--;
+                                              final item = display_list
+                                                  .removeAt(oldIndex);
+                                              display_list.insert(
+                                                  newIndex, item);
+                                              final itemx = main_projects_list
+                                                  .removeAt(oldIndex);
+                                              main_projects_list.insert(
+                                                  newIndex, itemx);
+                                            });
+                                          },
+                                          shrinkWrap: true,
+                                          itemCount: display_list.length,
+                                          itemBuilder: (context, index) {
+                                            if (display_list[index]
+                                                .controller
+                                                .text
+                                                .isEmpty) {
                                               display_list[index]
-                                                  .controller,
-                                              onChanged: (text) {
-                                                setState(() {
-                                                  main_projects_list[index]
-                                                      .project_title = text;
+                                                      .controller
+                                                      .text =
                                                   display_list[index]
-                                                      .project_title = text;
-                                                });
-                                              },
-                                              focusNode: display_list[index].focusNode,
-                                              autofocus: false,
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight
-                                                      .bold),
-                                              decoration: InputDecoration(
-                                                hintText: display_list[index]
-                                                    .project_title,
-                                                hintStyle: TextStyle(
-                                                    color: Colors.white),
-                                                border: InputBorder.none,
-                                              ),
-                                            ),
-                                            subtitle: Text(
-                                              display_list[index].date,
-                                              style: TextStyle(
-                                                  color: Colors.grey),
-                                            ),
-                                            trailing: Wrap(
-                                              spacing: 12,
-                                              // space between two icons
+                                                      .project_title;
+                                            }
+                                            return Column(
+                                              key:
+                                                  ValueKey(display_list[index]),
                                               children: <Widget>[
-                                                IconButton(
-                                                  onPressed: () {
-                                                    //more menu bottom sheet
-                                                    showModalBottomSheet<
-                                                        dynamic>(
-                                                      isScrollControlled:
-                                                      true,
-                                                      backgroundColor:
-                                                      Color(
-                                                          0xff303030),
-                                                      context: context,
-                                                      builder: (context) {
-                                                        return Column(
-                                                          mainAxisSize:
-                                                          MainAxisSize
-                                                              .min,
-                                                          children: [
-                                                            //Divider
-                                                            Divider(
-                                                              height: 30,
-                                                              thickness:
-                                                              1,
-                                                              indent:
-                                                              width,
-                                                              endIndent:
-                                                              width,
-                                                              color: Color(
-                                                                  0xff656565),
-                                                            ),
+                                                Slidable(
+                                                  endActionPane: ActionPane(
+                                                    extentRatio: 0.6,
+                                                    motion: StretchMotion(),
+                                                    children: [
+                                                      SlidableAction(
+                                                        onPressed: (context) {
+                                                          share(index);
+                                                        },
+                                                        backgroundColor: Colors
+                                                            .blueAccent
+                                                            .shade100,
+                                                        foregroundColor:
+                                                            Colors.white,
+                                                        icon: Icons.ios_share,
+                                                      ),
+                                                      SlidableAction(
+                                                        onPressed: (context) {
+                                                          rename(index);
+                                                        },
+                                                        backgroundColor: Colors
+                                                            .purple.shade400,
+                                                        foregroundColor:
+                                                            Colors.white,
+                                                        icon: Icons.edit,
+                                                      ),
+                                                      SlidableAction(
+                                                          onPressed: (context) {
+                                                            delete(index);
+                                                          },
+                                                          backgroundColor:
+                                                              Colors
+                                                                  .red.shade400,
+                                                          foregroundColor:
+                                                              Colors.white,
+                                                          icon: Icons.delete),
+                                                    ],
+                                                  ),
+                                                  child: ListTile(
+                                                    // visualDensity: VisualDensity(vertical: 4),
+                                                    key: ValueKey(
+                                                        display_list[index]),
+                                                    // key for the ReorderableListView
+                                                    onTap: () {
+                                                      print(index);
+                                                      Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  SecondRoute(
+                                                                      index,
+                                                                      main_projects_list)));
+                                                    },
+                                                    contentPadding:
+                                                        EdgeInsets.all(8.0),
 
-                                                            //show project name
-                                                            Container(
-                                                              padding: EdgeInsets
-                                                                  .only(
-                                                                  left:
-                                                                  30,
-                                                                  right:
-                                                                  40,
-                                                                  top: 10,
-                                                                  bottom:
-                                                                  10),
-                                                              child: Row(
-                                                                mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .start,
-                                                                crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .center,
-                                                                children: [
-                                                                  //Icon decoration
-                                                                  ImageIcon(
-                                                                    AssetImage(
-                                                                        'assets/icons/pink.png'),
-                                                                    size:
-                                                                    35,
-                                                                    color:
-                                                                    Colors
-                                                                        .white,
-                                                                  ),
-
-                                                                  //Project Name
-                                                                  Padding(
-                                                                    padding:
-                                                                    EdgeInsets
-                                                                        .only(
-                                                                        left: 16),
-                                                                    child:
-                                                                    Text(
-                                                                      display_list[index]
-                                                                          .project_title,
-                                                                      style: TextStyle(
-                                                                          fontFamily: 'Graphik',
-                                                                          fontSize: 17.5,
-                                                                          fontWeight: FontWeight
-                                                                              .w900,
-                                                                          color: Color(
-                                                                              0xffffffff)),
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-
-                                                            //Divider
-                                                            Divider(
-                                                              height: 30,
-                                                              thickness:
-                                                              2,
-                                                              indent: 10,
-                                                              endIndent:
-                                                              10,
-                                                              color: Color(
-                                                                  0xff656565),
-                                                            ),
-
-                                                            //items
-                                                            _createMoreMenuItem(
-                                                                icon: Icons
-                                                                    .ios_share,
-                                                                text:
-                                                                'Share',
-                                                                onTap:
-                                                                    () {
-                                                                  //share
-                                                                  Navigator.pop(
-                                                                      context);
-                                                                  print("Shared");
-                                                                }),
-
-                                                            //rename
-                                                            _createMoreMenuItem(
-                                                                icon: Icons
-                                                                    .edit,
-                                                                text:
-                                                                'Rename',
-                                                                onTap:
-                                                                    () {
-
-                                                                  _rename.add(true);
-                                                                  Navigator.pop(
-                                                                      context);
-                                                                  display_list[index].focusNode.requestFocus();
-
-                                                                }),
-
-                                                            //Delete, remove from project list and add into trash list
-                                                            _createMoreMenuItem(
-                                                                icon: Icons
-                                                                    .delete,
-                                                                text:
-                                                                'Delete',
-                                                                onTap:
-                                                                    () {
-                                                                  MainPage
-                                                                      .trashList
-                                                                      .add(
-                                                                      MainPage
-                                                                          .projectList[index]);
-                                                                  MainPage
-                                                                      .projectList
-                                                                      .removeAt(
-                                                                      index);
-                                                                  display_list
-                                                                      .removeAt(
-                                                                      index);
-                                                                  Navigator.pop(
-                                                                      context);
-                                                                  setState(
-                                                                          () {
-                                                                        main_projects_list
-                                                                            .removeAt(
-                                                                            index);
-                                                                      });
-                                                                }),
-
-                                                            //gap
-                                                            SizedBox(
-                                                                height:
-                                                                20),
-                                                          ],
-                                                        );
+                                                    title: TextField(
+                                                      controller:
+                                                          display_list[index]
+                                                              .controller,
+                                                      onChanged: (text) {
+                                                        setState(() {
+                                                          main_projects_list[
+                                                                      index]
+                                                                  .project_title =
+                                                              text;
+                                                          display_list[index]
+                                                                  .project_title =
+                                                              text;
+                                                        });
                                                       },
-                                                    );
-                                                  },
-                                                  icon: Icon(
-                                                    Icons
-                                                        .more_horiz_sharp,
-                                                    size: 26,
-                                                    color: Colors.white,
+                                                      focusNode:
+                                                          display_list[index]
+                                                              .focusNode,
+                                                      autofocus: false,
+                                                      style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 20,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                      decoration:
+                                                          InputDecoration(
+                                                        hintText:
+                                                            display_list[index]
+                                                                .project_title,
+                                                        hintStyle: TextStyle(
+                                                            color:
+                                                                Colors.white),
+                                                        border:
+                                                            InputBorder.none,
+                                                      ),
+                                                    ),
+                                                    subtitle: Padding(
+                                                      padding: const EdgeInsets.only(bottom: 5.0),
+                                                      child: Text(
+                                                        display_list[index].date,
+                                                        style: TextStyle(
+                                                            color: Colors.grey),
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
+                                                Divider(
+                                                  color: Colors.grey.shade800,
+                                                  height: 3,
+                                                  thickness: 1,
+                                                )
                                               ],
-                                            ),
-                                            leading: Image(
-                                              image: AssetImage(
-                                                  'assets/icons/Sheet_Grey.png'),
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-                                          Divider(
-                                            color: Color(0xff656565),
-                                            thickness: 1.5,
-                                            indent: 15,
-                                            endIndent: 15,
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                            ),
+                                            );
+                                            // ,
+                                            // );
+                                          }),
+                                    ),
+                                  ),
                           );
                         },
                       ),
@@ -530,6 +367,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                     children: [
                       //Custom AppBar
                       AppBar(
+                        titleSpacing: 25.0,
                         toolbarHeight: 80,
                         backgroundColor: Color(0xff1E1E1E),
                         automaticallyImplyLeading: false,
@@ -542,21 +380,22 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                               letterSpacing: 0.5,
                               color: Colors.white),
                         ),
-                        /*
+
+                        // Side Menu Widget
                         actions: [
                           Builder(
                             builder: (context) => IconButton(
-                              padding: EdgeInsets.only(left: 0, right: 10),
+                              padding: EdgeInsets.only(left: 0, right: 40),
                               icon: Icon(
                                 Icons.menu,
                                 size: 34,
-                                color: Color.fromARGB(255, 248, 144, 144),
+                                color: Colors.white,
                               ),
                               onPressed: () =>
                                   Scaffold.of(context).openDrawer(),
                             ),
                           ),
-                        ],*/
+                        ],
                         elevation: 0,
                         centerTitle: false,
                       ),
@@ -577,13 +416,13 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                             cursorColor: Colors.grey[300],
                             textAlignVertical: TextAlignVertical.center,
                             style:
-                            TextStyle(fontSize: 16, color: Colors.white70),
+                                TextStyle(fontSize: 16, color: Colors.white70),
                             onChanged: (newSearch) {
                               _search = newSearch;
                               display_list = main_projects_list
                                   .where((main_projects_list) =>
-                                  main_projects_list.project_title
-                                      .contains(_search))
+                                      main_projects_list.project_title
+                                          .contains(_search))
                                   .toList();
                             },
                             decoration: InputDecoration(
@@ -600,12 +439,12 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(100),
                                 borderSide:
-                                new BorderSide(color: Colors.transparent),
+                                    new BorderSide(color: Colors.transparent),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(100),
                                 borderSide:
-                                new BorderSide(color: Colors.transparent),
+                                    new BorderSide(color: Colors.transparent),
                               ),
                             ),
                           ),
@@ -620,16 +459,16 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                             visible: _isInvisibleTriggerActive,
                             child: Container(
                                 color:
-                                Color(0x77000000) //semi-Transparent black
-                              //color: Color(0x00000000),
-                            ),
+                                    Color(0x77000000) //semi-Transparent black
+                                //color: Color(0x00000000),
+                                ),
                           ),
                           onTap: () {
                             setState(() {
                               _isMenuActive = !_isMenuActive;
                               _isSearchBarActive = !_isSearchBarActive;
                               _isInvisibleTriggerActive =
-                              !_isInvisibleTriggerActive;
+                                  !_isInvisibleTriggerActive;
                               _controller.reverse();
                             });
                           },
@@ -652,24 +491,6 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
                 MainPage.isNewProject = true;
                 createNewProject();
-                switch (MainPage.menuName) {
-                  case "Beat Sheet":
-                  //Navigator.of(context).push(toBS_main(MainPage.projectPos)).then((value) => setState(() {}));
-                    break;
-                  case "Shot List":
-                    break;
-                  case "Budget Sheet":
-                    break;
-                  case "One Liner":
-                    break;
-                  case "Storyboard":
-                    break;
-                  case "Concept Board":
-                    break;
-                  default:
-                    print("N/A");
-                    break;
-                }
               },
               backgroundColor: Colors.transparent,
               child: CircleAvatar(
@@ -687,37 +508,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
     );
   }
 
-  //widget
-  //Tap-able Item template, navigate-able
-  Widget _createMoreMenuItem(
-      {IconData? icon, required String text, GestureTapCallback? onTap}) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      child: ListTile(
-        minVerticalPadding: 10,
-        title: Row(
-          children: <Widget>[
-            //Icon decoration
-            Icon(
-              icon,
-              size: 40,
-              color: Color(0xff999999),
-            ),
-            SizedBox(width: 16),
-            Text(
-              text,
-              style: TextStyle(
-                  fontFamily: 'CenturyGothic',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: Color(0xffffffff)),
-            ),
-          ],
-        ),
-        onTap: onTap,
-      ),
-    );
-  }
+
 
   //function
   void createNewProject() {
@@ -733,24 +524,29 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
           x.add(int.parse(num));
         }
       }
-      main_projects_list.add(ProjectModel(
-          "Project ${x.isEmpty ? main_projects_list.length + 1 : x.reduce((
-              value, element) => value > element ? value : element) + 1}",
-          "8 AUG 2021",
-          "icons.more",
-          "('assets/Grey_docs2.jpeg')"));
+      String id = nanoid();
+      main_projects_list.add(ProjectModel(id,
+          "Project ${x.isEmpty ? main_projects_list.length + 1 : x.reduce((value, element) => value > element ? value : element) + 1}",
+          "8 AUG 2021"));
     });
     display_list = List.from(main_projects_list);
   }
 
-  // void rename(String index) {
-  //   for (int i = 0; i < main_projects_list.length; i++){
-  //     if (i == index){
-  //       TextField.focusNode.requestFocus();
-  //       break;
-  //     }
-  //   }
-  // }
+  void share(int index) {
+    Share.share(display_list[index].project_title);
+  }
+
+  void rename(int index) {
+    display_list[index].focusNode.requestFocus();
+  }
+
+  void delete(int index) {
+    setState(() {
+      MainPage.trashList.add(display_list[index]);
+      display_list.removeAt(index);
+      main_projects_list.removeAt(index);
+    });
+  }
 
 /*
   Future<void> Export() async{
@@ -766,19 +562,17 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
 }
 
-
-
 //remove scroll glow effect
 class MyBehavior extends ScrollBehavior {
   @override
-  Widget buildViewportChrome(BuildContext context, Widget child,
-      AxisDirection axisDirection) {
+  Widget buildViewportChrome(
+      BuildContext context, Widget child, AxisDirection axisDirection) {
     return child;
   }
 }
 
 void clearTempItems() {
-  MainPage.NewCS = []; //[1]
+  //MainPage.NewCS = []; //[1]
   /*MyHomePage.NewSL = []; //[2]
   MyHomePage.NewBS = []; //[3]
   MyHomePage.NewOL = []; //[4]
